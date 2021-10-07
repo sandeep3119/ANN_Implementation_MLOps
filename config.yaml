@@ -1,13 +1,13 @@
 params:
-  epochs: 30
+  epochs: 1
   batch_size: 32
   loss_function: sparse_categorical_crossentropy
-  metrics: accuracy
+  metrics: ['accuracy']
   optimizer: SGD
   validation_data_size: 5000
 artifacts:
   artifacts_dir: artifacts
-  model_dir: model
+  model_dir: models
   plots_dir: plots
   checkpoint_dir: checkpoints
 logs: 
