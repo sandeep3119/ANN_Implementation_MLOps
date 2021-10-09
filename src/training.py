@@ -1,8 +1,10 @@
 from utils.common import readConfig
 from utils.data_mgmt import get_data
-from utils.model import create_model, saveModel
+from utils.model import create_model, saveModel, save_plot
 import argparse
+from tensorflow.keras.callbacks import ModelCheckpoint
 import os
+import time
 
 
 def training(config_path):
@@ -11,23 +13,33 @@ def training(config_path):
     LOSS_FUNCTION = config['params']['loss_function']
     METRICS = config['params']['metrics']
     OPTIMIZER = config['params']['optimizer']
+    artifacts_dir = config['artifacts']['artifacts_dir']
+    model_name = config['artifacts']['model_name']
+    file_base_name = time.strftime(f"{model_name}_%Y_%m_%d_%H_%M_%S_")
     (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = get_data(validation_data_size)
 
     model = create_model(LOSS_FUNCTION, OPTIMIZER, METRICS)
 
     EPOCHS = config['params']['epochs']
     VALIDATION_SET = (X_valid, y_valid)
+    checkpoint_dir = config['artifacts']['checkpoint_dir']
+    checkpoint_file_path= os.path.join(artifacts_dir, checkpoint_dir,f"{file_base_name}.h5")
+    checkpoint = ModelCheckpoint(checkpoint_file_path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [checkpoint]
     history = model.fit(X_train, y_train, epochs=EPOCHS,
-                        validation_data=VALIDATION_SET)
+                        validation_data=VALIDATION_SET,
+                        callbacks=callbacks_list)
 
-    artifacts_dir=config['artifacts']['artifacts_dir']
+
     model_dir = config['artifacts']['model_dir']
     model_dir_path=os.path.join(artifacts_dir,model_dir)
     os.makedirs(model_dir_path,exist_ok=True)
-    save = input("Do you want to Save the model(y/n)")
-    if (save == 'y'):
+    saveModel(model_dir_path, model,file_base_name)
 
-        saveModel(model_dir_path, model)
+    plot_dir=config['artifacts']['plots_dir']
+    plot_dir_path=os.path.join(artifacts_dir,plot_dir)
+    os.makedirs(plot_dir_path,exist_ok=True)
+    save_plot(history.history,plot_dir_path,file_base_name)
 
 
 if __name__ == '__main__':
