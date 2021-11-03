@@ -21,3 +21,6 @@ ANN implementation with MLOps project structure
         -config.yaml(contains all project and training related configuartions)
         -setup.py(project specific details)
 ```            
+
+### Use Tensorboard
+    tensorboard --logdir=log_dir/tensorboard_logs
