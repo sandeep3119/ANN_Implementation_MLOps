@@ -1,8 +1,8 @@
 from utils.common import readConfig
 from utils.data_mgmt import get_data
 from utils.model import create_model, saveModel, save_plot
+from utils.callbacks import get_callbacks
 import argparse
-from tensorflow.keras.callbacks import ModelCheckpoint
 import os
 import time
 
@@ -22,13 +22,10 @@ def training(config_path):
 
     EPOCHS = config['params']['epochs']
     VALIDATION_SET = (X_valid, y_valid)
-    checkpoint_dir = config['artifacts']['checkpoint_dir']
-    checkpoint_file_path= os.path.join(artifacts_dir, checkpoint_dir,f"{file_base_name}.h5")
-    checkpoint = ModelCheckpoint(checkpoint_file_path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = [checkpoint]
+    CALLBACKS=get_callbacks(config,X_train)
     history = model.fit(X_train, y_train, epochs=EPOCHS,
                         validation_data=VALIDATION_SET,
-                        callbacks=callbacks_list)
+                        callbacks=CALLBACKS)
 
 
     model_dir = config['artifacts']['model_dir']
